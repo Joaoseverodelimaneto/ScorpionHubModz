@@ -1,217 +1,71 @@
---===[ LOGIN GUI ]===--
-local Players = game:GetService("Players")
-local lp = Players.LocalPlayer
-
-local function createLoginGUI()
-    local gui = Instance.new("ScreenGui", game.CoreGui)
-    gui.Name = "LoginSystem"
-
-    local frame = Instance.new("Frame", gui)
-    frame.Size = UDim2.new(0, 300, 0, 180)
-    frame.Position = UDim2.new(0.5, -150, 0.5, -90)
-    frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
-    frame.BorderSizePixel = 0
-
-    local title = Instance.new("TextLabel", frame)
-    title.Size = UDim2.new(1, 0, 0, 40)
-    title.Text = "Login"
-    title.TextColor3 = Color3.new(1,1,1)
-    title.BackgroundColor3 = Color3.fromRGB(40,40,40)
-    title.Font = Enum.Font.SourceSansBold
-    title.TextSize = 24
-
-    local userBox = Instance.new("TextBox", frame)
-    userBox.Size = UDim2.new(0, 260, 0, 30)
-    userBox.Position = UDim2.new(0, 20, 0, 50)
-    userBox.PlaceholderText = "Usuário"
-    userBox.Text = ""
-    userBox.BackgroundColor3 = Color3.fromRGB(50,50,50)
-    userBox.TextColor3 = Color3.new(1,1,1)
-    userBox.Font = Enum.Font.SourceSans
-    userBox.TextSize = 18
-
-    local passBox = Instance.new("TextBox", frame)
-    passBox.Size = UDim2.new(0, 260, 0, 30)
-    passBox.Position = UDim2.new(0, 20, 0, 90)
-    passBox.PlaceholderText = "Senha"
-    passBox.Text = ""
-    passBox.BackgroundColor3 = Color3.fromRGB(50,50,50)
-    passBox.TextColor3 = Color3.new(1,1,1)
-    passBox.Font = Enum.Font.SourceSans
-    passBox.TextSize = 18
-
-    local msg = Instance.new("TextLabel", frame)
-    msg.Size = UDim2.new(1, 0, 0, 20)
-    msg.Position = UDim2.new(0, 0, 1, 0)
-    msg.Text = ""
-    msg.TextColor3 = Color3.fromRGB(0, 255, 0)
-    msg.BackgroundTransparency = 1
-    msg.Font = Enum.Font.SourceSans
-    msg.TextSize = 18
-
-    local loginBtn = Instance.new("TextButton", frame)
-    loginBtn.Size = UDim2.new(0, 260, 0, 35)
-    loginBtn.Position = UDim2.new(0, 20, 0, 130)
-    loginBtn.Text = "Logar"
-    loginBtn.TextColor3 = Color3.new(1,1,1)
-    loginBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
-    loginBtn.Font = Enum.Font.SourceSansBold
-    loginBtn.TextSize = 22
-
-    loginBtn.MouseButton1Click:Connect(function()
-        if userBox.Text == "SCORPION MODZ" and passBox.Text == "V1" then
-            msg.Text = "Logado com sucesso!"
-            wait(1)
-            gui:Destroy()
-            setupMainMenu()
-        else
-            msg.Text = "Usuário ou senha incorretos!"
-            msg.TextColor3 = Color3.fromRGB(255, 0, 0)
-            wait(2)
-            msg.Text = ""
-            msg.TextColor3 = Color3.fromRGB(0, 255, 0)
-        end
-    end)
-end
-
---===[ FUNÇÕES PRINCIPAIS ]===--
-local AimbotOn = false
-local SilentAimOn = false
-local ESPLineOn = true
-local currentTarget = nil
-
-local function getClosestEnemy()
-    local closest, dist = nil, math.huge
-    for _, plr in pairs(game.Players:GetPlayers()) do
-        if plr ~= lp and plr.Team ~= lp.Team and plr.Character and plr.Character:FindFirstChild("Head") then
-            local head = plr.Character.Head.Position
-            local mag = (lp.Character.Head.Position - head).Magnitude
-            if mag < dist then
-                dist = mag
-                closest = plr
-            end
-        end
-    end
-    return closest
-end
-
-local function updateTarget()
-    local newTarget = getClosestEnemy()
-    if newTarget then currentTarget = newTarget end
-end
-
-local function createESPLine()
-    for _,v in pairs(workspace:GetChildren()) do
-        if v:IsA("Model") and v:FindFirstChild("Humanoid") and v:FindFirstChild("Head") then
-            if v:FindFirstChildOfClass("Humanoid").Health > 0 then
-                if v ~= lp.Character and Players:GetPlayerFromCharacter(v) and Players:GetPlayerFromCharacter(v).Team ~= lp.Team then
-                    local line = Drawing.new("Line")
-                    line.Color = Color3.new(1,0,0)
-                    line.Thickness = 1
-                    line.Transparency = 1
-                    line.ZIndex = 2
-
-                    coroutine.wrap(function()
-                        while ESPLineOn and v and v:FindFirstChild("Head") and lp.Character and lp:FindFirstChild("Head") do
-                            local pos1, onScreen1 = workspace.CurrentCamera:WorldToViewportPoint(lp.Character.Head.Position)
-                            local pos2, onScreen2 = workspace.CurrentCamera:WorldToViewportPoint(v.Head.Position)
-                            if onScreen1 and onScreen2 then
-                                line.Visible = true
-                                line.From = Vector2.new(pos1.X, pos1.Y)
-                                line.To = Vector2.new(pos2.X, pos2.Y)
-                            else
-                                line.Visible = false
-                            end
-                            wait()
-                        end
-                        line:Remove()
-                    end)()
-                end
-            end
-        end
-    end
-end
-
---===[ INTERFACE MENU ]===--
-function setupMainMenu()
-    -- Cria GUI
-    local gui = Instance.new("ScreenGui", game.CoreGui)
-    gui.Name = "MainMenu"
-
-    local frame = Instance.new("Frame", gui)
-    frame.Size = UDim2.new(0, 250, 0, 200)
-    frame.Position = UDim2.new(0, 100, 0, 100)
-    frame.BackgroundColor3 = Color3.fromRGB(40,40,40)
-    frame.Draggable = true
-    frame.Active = true
-
-    local closeBtn = Instance.new("TextButton", frame)
-    closeBtn.Size = UDim2.new(0, 25, 0, 25)
-    closeBtn.Position = UDim2.new(1, -30, 0, 5)
-    closeBtn.Text = "-"
-    closeBtn.TextColor3 = Color3.new(1,1,1)
-    closeBtn.BackgroundColor3 = Color3.fromRGB(100,0,0)
-    closeBtn.MouseButton1Click:Connect(function()
-        frame.Visible = not frame.Visible
-    end)
-
-    local label = Instance.new("TextLabel", frame)
-    label.Size = UDim2.new(1, -10, 0, 25)
-    label.Position = UDim2.new(0, 5, 0, 5)
-    label.Text = "SCORPION MODZ Menu"
-    label.TextColor3 = Color3.new(1,1,1)
-    label.BackgroundTransparency = 1
-    label.Font = Enum.Font.SourceSansBold
-    label.TextSize = 18
-
-    -- Toggle Aimbot
-    local aimbotToggle = Instance.new("TextButton", frame)
-    aimbotToggle.Size = UDim2.new(0, 220, 0, 30)
-    aimbotToggle.Position = UDim2.new(0, 15, 0, 40)
-    aimbotToggle.Text = "Aimbot [OFF]"
-    aimbotToggle.TextColor3 = Color3.new(1,1,1)
-    aimbotToggle.BackgroundColor3 = Color3.fromRGB(60,60,60)
-    aimbotToggle.MouseButton1Click:Connect(function()
-        AimbotOn = not AimbotOn
-        aimbotToggle.Text = AimbotOn and "Aimbot [ON]" or "Aimbot [OFF]"
-        if AimbotOn then updateTarget() end
-    end)
-
-    -- Toggle Silent Aim
-    local silentToggle = Instance.new("TextButton", frame)
-    silentToggle.Size = UDim2.new(0, 220, 0, 30)
-    silentToggle.Position = UDim2.new(0, 15, 0, 80)
-    silentToggle.Text = "Silent Aim [OFF]"
-    silentToggle.TextColor3 = Color3.new(1,1,1)
-    silentToggle.BackgroundColor3 = Color3.fromRGB(60,60,60)
-    silentToggle.MouseButton1Click:Connect(function()
-        SilentAimOn = not SilentAimOn
-        silentToggle.Text = SilentAimOn and "Silent Aim [ON]" or "Silent Aim [OFF]"
-    end)
-
-    -- Toggle ESP
-    local espToggle = Instance.new("TextButton", frame)
-    espToggle.Size = UDim2.new(0, 220, 0, 30)
-    espToggle.Position = UDim2.new(0, 15, 0, 120)
-    espToggle.Text = "ESP Line [ON]"
-    espToggle.TextColor3 = Color3.new(1,1,1)
-    espToggle.BackgroundColor3 = Color3.fromRGB(60,60,60)
-    espToggle.MouseButton1Click:Connect(function()
-        ESPLineOn = not ESPLineOn
-        espToggle.Text = ESPLineOn and "ESP Line [ON]" or "ESP Line [OFF]"
-        if ESPLineOn then createESPLine() end
-    end)
-
-    -- X key para mudar alvo
-    game:GetService("UserInputService").InputBegan:Connect(function(input, processed)
-        if input.KeyCode == Enum.KeyCode.X and AimbotOn then
-            updateTarget()
-        end
-    end)
-
-    -- ESP inicial ativado
-    createESPLine()
-end
-
--- INICIAR LOGIN
-createLoginGUI()
+LS0tPT09IFtMT0dJTiBHSV9dPT09LS0KbG9jYWwgUGxheWVycyA9IGdhbWU6R2V0U2VydmljZSgiUGxheWVycyIp
+bG9jYWwg bCA9IFBsYXllcnMuTG9jYWxQbGF5ZXIKCmxvY2FsIGZ1bmN0aW9uIGNyZWF0ZUxvZ2luR1VJKCkK
+ICAgICAgbG9jYWwgZ3VpID0gSW5zdGFuY2UubmV3KCJTY3JlZW5HdWkiLCBnYW1lLkNvcmVHdWkpCiAgICAg
+ICBndWkuTmFtZSA9ICJMb2dpblN5c3RlbSIKCiAgICAgICAgbG9jYWwgZnJhbWUgPSBJbnN0YW5jZS5uZXco
+IlRyYW5zZm9ybSIsIGd1aSkKICAgICAgICBmcmFtZS5TaXplID0gVURpbDItLm5ldygwLCAzMDAsIDE4MCkK
+ICAgICAgICBmcmFtZS5Qb3NpdGlvbiA9IFVESWwyLm5ldygwLjUsIC0xNTAsIDAuNSwgLTkwKQogICAgICAg
+IGZyYW1lLkJhY2tncm91bmRDb2xvcjMgPSBDb2xvcjMuZnJvbVJHQigzMCwzMCwzMCkKICAgICAgICBmcmFt
+ZS5Cb3JkZXJTaXplUGl4ZWwgPSAwCgogICAgICAgIGxvY2FsIHRpdGxlID0gSW5zdGFuY2UubmV3KCJUZWFk
+TGVhYmVsIiwgZnJhbWUpCiAgICAgICAgdGl0bGUuU2l6ZSA9IFVESWwyLm5ldyAxLCAwLCA0MCkKICAgICAg
+ICB0aXRsZS5UZXh0ID0gIkxvZ2luIgogICAgICAgIHRpdGxlLlRleHRDb2xvcjMgPSBDb2xvcjMuZXhwbGFu
+YWJkZWQgCnRpdGxlLkJhY2tncm91bmRDb2xvcjMgPSBDb2xvcjMuZnJvbVJHQig0MCw0MCw0MCkKICAgICAg
+ICB0aXRsZS5Gb250ID0gRW51bS5Gb250LlNvdXJjZVNhbnNCb2xkCiAgICAgICAgdGl0bGUuVGV4dFNpemUg
+PSAyNAoKICAgICAgICBsb2NhbCB1c2VyQm94ID0gSW5zdGFuY2UubmV3KCJUZWFib3giLCBmcmFtZSkKICAg
+ICAgICB1c2VyQm94LlNpemUgPSBVRGlMMi5uZXcgMCwgMjYwLCAwLCAzMCkKICAgICAgICB1c2VyQm94LlBh
+c2l0aW9uID0gVURpbDIubmV3IDAsIDIwLCAwLCA1MCkKICAgICAgICB1c2VyQm94LlBsYWNlaG9sZGVyVGV4
+dCA9ICJVc3VhcmlvIgogICAgICAgIHVzZXJCb3guVGV4dCA9ICIiCiAgICAgICAgdXNlckJveC5CYWNrdW5k
+Q29sb3IgPSBDb2xvcjMuZnJvbVJHQig1MCw1MCw1MCkKICAgICAgICB1c2VyQm94LlRleHRDb2xvcjMgPSBD
+b2xvcjMuZXhwbGFuYWJkZWQKICAgICAgICB1c2VyQm94LkZvbnQgPSBFbnVtLkZvbnQuU291cmNlU2Fucwog
+ICAgICAgIHVzZXJCb3guVGV4dFNpemUgPSAxOAogICAgICAgIAogICAgICBsb2NhbCBwYXNzQm94ID0gSW5z
+dGFuY2UubmV3KCJUZWFib3giLCBmcmFtZSkKICAgICAgICBwYXNzQm94LlNpemUgPSBVRGlMMi5uZXcgMCwg
+MjYwLCAwLCAzMCkKICAgICAgICBwYXNzQm94LlBvc2l0aW9uID0gVURpbDIubmV3IDAsIDIwLCAwLCA5MAog
+ICAgICAgIHBhc3NCb3guUGxhY2Vob2xkZXJUZXh0ID0gIlNhbnNhIgogICAgICAgIHBhc3NCb3guVGV4dCA9
+ICIiCiAgICAgICAgcGFzc0JveC5CYWNrdW5kQ29sb3IgPSBDb2xvcjMuZnJvbVJHQig1MCw1MCw1MCkKICAg
+ICAgICBwYXNzQm94LlRleHRDb2xvcjMgPSBDb2xvcjMuZXhwbGFuYWJkZWQKICAgICAgICBwYXNzQm94LkZv
+bnQgPSBFbnVtLkZvbnQuU291cmNlU2FucwogICAgICAgIHBhc3NCb3guVGV4dFNpemUgPSAxOAogICAgICAg
+IAogICAgICBsb2NhbCBtc2cgPSBJbnN0YW5jZS5uZXcoIlRleHRMYWJlbCIsIGZyYW1lKQogICAgICAgIG1z
+Zy5TaXplID0gVURpbDIubmV3IDEgLCAwICwgMjAKICAgICAgICBtc2cuUG9zaXRpb24gPSBVRGlMMi5uZXcg
+MSwgMCwgMSwgMjAgCiAgICAgICAgbXNnLlRleHQgPSAiIgogICAgICAgIG1zZy5UZXh0Q29sb3IgPSBDb2xv
+cjMuZnJvbVJHQigyNTUsIDI1NSwgMCkKICAgICAgICBtc2cuQmFja2dyb3VuZFRyYW5zcGFyZW5jeSA9IDEK
+ICAgICAgICBtc2cuRm9udCA9IEVudW0uRm9udC5Tb3VyY2VTYW5zCiAgICAgICAgbXNnLlRleHRTaXplID0g
+MTgKCiAgICAgIGxvY2FsIGxvZ2luQnRybiA9IEluc3RhbmNlLm5ldygiVGV4dEJ1dHRvbiIsIGZyYW1lKQog
+ICAgICBsb2dpbkJ0cm4uU2l6ZSA9IFVESWwyLm5ldyAwLCAyNjAsIDAsIDM1KQogICAgICBsb2dpbkJ0cm4u
+UG9zaXRpb24gPSBVRGlMMi5uZXcgMCwgMjAsIDAsIDEzMAogICAgICBsb2dpbkJ0cm4uVGV4dCA9ICJMb2dh
+ciIKICAgICAgbG9naW5CdHJuLlRleHRDb2xvcjMgPSBDb2xvcjMuZXhwbGFuYWJkZWQKICAgICAgbG9naW5C
+dHJuLkJhY2tncm91bmRDb2xvcjMgPSBDb2xvcjMuZnJvbVJHQCgzLCAxNzAsIDI1NSkKICAgICAgbG9naW5C
+dHJuLkZvbnQgPSBFbnVtLkZvbnQuU291cmNlU2Fuc0JvbGQKICAgICAgbG9naW5CdHJuLlRleHRTaXplID0g
+MjIKCiAgICBsb2dpbkJ0cm4uTXVzZUJ1dHRvbjFDbGljazpDb25uZWN0KGZ1bmN0aW9uKCkKICAgICAgICBp
+ZiB1c2VyQm94LlRleHQgPT0gIlNDT1JQSU9OIE1PREoiIGFuZCBwYXNzQm94LlRleHQgPT0gIlYxIiB0aGVu
+CiAgICAgICAgICAgIG1zZy5UZXh0ID0gIkxvZ2FkbyBjb20gc3VjZXNvISIKICAgICAgICAgICAgd2FpdCgx
+KQogICAgICAgICAgICBndWk6RGVzdHJveSgpCiAgICAgICAgICAgIHNldFVwTWFpbk1lbnUoKQogICAgICBl
+bHNlCiAgICAgICAgICAgIG1zZy5UZXh0ID0gIlVzdcOqcmlvIG91IHNlbmhhIGluY29ycmV0b3MhIgogICAg
+ICAgICAgICBtc2cuVGV4dENvbG9yID0gQ29sb3IuZnJvbVJHQigyNTUsIDAsIDApCiAgICAgICAgICAgIHdh
+aXQoMikKICAgICAgICAgICAgbXNnLlRleHQgPSAiIgogICAgICBlbmQpCiAgICBlbmQpCgpsb2NhbCBJbWJv
+biA9IGZhbHNlCiBsb2NhbCBTbGllbnRBaW1PbihPbigpCiBsb2NhbCBFU1BMaW5lT24gPSB0cnVlCiBsb2Nh
+bCBjdXJyZW50VGFyZ2V0ID0gbmlsCgpsb2NhbCBmdW5jdGlvbiBnZXRMb3Nlc3RFbmlteSgpCiAgICBsb2Nh
+bCBjbG9zZXN0LCBkaXN0ID0gbmlsLCBtYXRoLmh1Z2UKICAgIGZvciAsIFBsciBpbiBwYWlycyhnYW1lLlBs
+YXllcnM6R2V0UGxheWVyczkoKSkKICAgICAgICBpZiBQbHIgIT0gbGwgYW5kIFBsci5UZWFtICE9IGwgVGVh
+bSBhbmQgcGxyLkNoYXJhY3RlciBhbmQgIHBsci5DaGFyYWN0ZXI6RmluZEFpc3QoIkhlYWQiKSB0aGVuCiAg
+ICAgICAgICAgIGxvY2FsIGhlYWQgPSBwbHIuQ2hhcmFjdGVyLkhlYWQucG9zaXRpb24KICAgICAgICAgICAg
+bG9jYWwgbWFnID0gKGxsLkNoYXJhY3Rlci5IZWFkLnBvc2l0aW9uIC0gaGVhZCkubWFnbml0dWRlCiAgICAg
+ICAgICAgIGlmIG1hZyA8IGRpc3QgdGhlbgogICAgICAgICAgICAgICAgZGlzdCA9IG1hZyAgCiAgICAgICAg
+ICAgICAgICBjbG9zZXN0ID0gcGxyCiAgICBlbmQKICAgIHJldHVybiBjbG9zZXN0CiBlbmQKCmxvY2FsIGZ1
+bmN0aW9uIHVwZGF0ZVRhcmdldCgpCiAgICBsb2NhbCBuZXdUYXJnZXQgPSBnZXRMb3Nlc3RFbmlteSgpCiAg
+ICBpZiBuZXdUYXJnZXQgdGhlbgogICAgICAgIGN1cnJlbnRUYXJnZXQgPSBuZXdUYXJnZXQKICBlbmQKCmxv
+Y2FsIGZ1bmN0aW9uIGNyZWF0ZUVTUGxpbmUoKQogICAgZm9yICwgdCBpbiBwYWlycyh3b3Jrc3BhY2U6R2V0
+Q2hpbGRyZW4oKSkKICAgICAgICBpZiB2OklzQShFbWl0KSBhbmQgdi5GaW5kRmlyc3RDaGlsZChIdW1hbm9p
+ZCkgYW5kIHY6RmluZEZpcnN0Q2hpbGQoIkhlYWQiKSB0aGVuCiAgICAgICAgICAgIGlmIHY6RmluZEFpc3RM
+YXNzKCJIdW1hbm9pZCIpLkhlYWx0aCA+IDAgdGhlbgogICAgICAgICAgICAgICAgaWYgdiA9PSBsbC5DaGFy
+YWN0ZXIgYW5kIFBsYXllcnM6R2V0UGxheWVyRnJvbUNoYXJhY3Rlcih2KSBhbmQgUGxheWVycy5HZXRQbGF5
+ZXJGcm9tQ2hhcmFjdGVyKHYpLlRlYW0gIT0gbGkudGVhbSB0aGVuCiAgICAgICAgICAgICAgICAgICAgbG9j
+YWwgbGluZSA9IERyYXdpbmcubmV3KCJMaW5lIikKICAgICAgICAgICAgICAgICAgICBsaW5lLkNvbG9yID0g
+Q29sb3IubmV3KDIuNCwgMCwgMCkKICAgICAgICAgICAgICAgICAgICBsaW5lLlRoaWNrbmVzcyA9IDEKICAg
+ICAgICAgICAgICAgICAgICBsaW5lLlRyYW5zcGFyZW5jeSA9IDEKICAgICAgICAgICAgICAgICAgICBsaW5l
+LlpJbmRleCA9IDIKCiAgICAgICAgICAgICAgICBjb3JvdGluaWUud3JhcChmdW5jdGlvbigpCiAgICAgICAg
+ICAgICAgICAgICAgd2hpbGUgRVNQTGluZU9uIGFuZCB2IGFuZCB2OkZpbmQoIkhlYWQiKSBhbmQgbGkgYW5k
+IGw6RmluZCgibmUiKSB0aGVuCiAgICAgICAgICAgICAgICAgICAgICAgIGxvY2FsIHBvcywxIG9uU2NyZWVu
+MSA9IHdvcmtzcGFjZS5DdXJyZW50Q2FtZXJhOldvcmxkVG9WdWV3cG9pbnQobGkuQ2hhcmFjdGVyLkhlYWQu
+UG9zaXRpb24pCiAgICAgICAgICAgICAgICAgICAgICAgIGxvY2FsIHBvcywyIG9uU2NyZWVuMiA9IHdvcmtz
+cGFjZS5DdXJyZW50Q2FtZXJhOldvcmxkVG9WdWV3cG9pbnQodkhlYWQucG9zaXRpb24pCiAgICAgICAgICAg
+ICAgICAgICAgICAgIGlmIG9uU2NyZWVuMSBhbmQgb25TY3JlZW4yIHRoZW4KICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgbGluZS5WaXNpYmxlID
